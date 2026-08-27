@@ -1,0 +1,206 @@
+<style>
+.modal-lg {
+    max-width: 80% !important;
+}
+</style>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<div class="modal fade" id="imagevideoModalCenter" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Media Gallery</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="height: 500px; overflow: auto;">
+      <div class="col-lg-12">
+                    <link href="{{ URL::asset('public/assets/css/dropzone.min.css') }}" rel="stylesheet">
+                    <script src="{{ URL::asset('public/assets/js/dropzone.min.js') }}"></script>
+                    
+                    <form action="{{ url('/mediagallery/media-items') }}" method="post" enctype="multipart/form-data" class="dropzone" id="my-dropzone">
+                        @csrf
+                    
+                    </form>
+                    
+                    <script>
+                        Dropzone.options.myDropzone = {
+                            paramName: "images", // The name that will be used to transfer the file
+                            maxFilesize: 100, // MB
+                            acceptedFiles: "image/*",
+                            dictDefaultMessage: "Drop images here or click to upload",
+                            addRemoveLinks: true,
+                            init: function () {
+                                this.on("success", function (file, response) {
+                                    // Handle success
+                                    file.previewElement.setAttribute("data-image-id", response.imageId);
+                                    loadMorePostNews(1);
+                                    console.log(response);
+                                });
+                    
+                                this.on("removedfile", function (file) {
+                                   var imageId = file.previewElement.getAttribute("data-image-id");
+                                    $.ajax({
+                                        url: "{{ url('/mediagallery/delete-image/') }}/"+imageId,
+                                        headers: {
+                                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                        },
+                                        success: function (response) {
+                                            // Handle success
+                                            loadMorePostNews(1);
+                                        },
+                                        error: function (xhr, status, error) {
+                                            // Handle error
+                                            console.error(xhr.responseText);
+                                        }
+                                    });
+                                });
+                            }
+                        };
+    function loadMorePostNews(nextPage) {
+    if(nextPage!=1)
+    {
+        if(nextPage=='')
+        {
+            var nextPageUrl = document.getElementById('newsloadMoreBtn').getAttribute('data-next-page');
+            var pageNum = nextPageUrl.split('=').pop(); 
+            nextPage = pageNum;
+        }
+        
+    }
+    $.ajax({
+        url: "{{ url('/news/loadmoredata?page=') }}"+nextPage+"&nid="+$('#nid').val(),
+        type: 'GET',
+        dataType: 'html',
+        success: function (response) {
+            // Append the new posts to the container
+            var responsedata = JSON.parse(response);
+            var html = '';
+            $.each(responsedata.data, function(index, item) {
+              var extension = item.photos.split('.').pop();
+              
+              var pdfval = '';
+              var imgpath = item.fullpath;
+              
+              if(extension=='pdf')
+              {
+                pdfval = "{{asset('public/media').'/pdficon.jpg'}}";
+                imgpath = pdfval;
+              } else if(extension=='webp')
+              {
+                pdfval = imgpath;
+                imgpath = imgpath.replace('.webp', '_small.webp');
+              } else {
+                var dotIndex  = imgpath.lastIndexOf('.');
+                var filePathWithoutExtension;
+                if (dotIndex !== -1 && dotIndex > 0) {
+                  filePathWithoutExtension = imgpath.slice(0, dotIndex);
+                } 
+                pdfval = filePathWithoutExtension+'_video.gif';
+                imgpath = pdfval;
+              }
+              
+              html +='<div class="col-lg-2 mediacls">'
+              html +='<img style="cursor:pointer" id="photo_'+item.id+'" src="'+imgpath+'" onclick="ImageSelect(\'' + item.fullpath + '\', \'' + pdfval + '\', \'photo_' + item.id + '\')" class="img-fluid rounded" />'
+              html +='</div>'
+            });
+            if(nextPage!=1)
+            {
+                $('#mediaContainer').append(html);
+            } else {
+                $('#imageList').html(html);
+            }
+            
+            var nextPageUrl = responsedata.next_page_url;
+            $('#newsloadMoreBtn').show();
+            if(nextPageUrl==null)
+            {
+              $('#newsloadMoreBtn').hide();
+            }
+            $('#newsloadMoreBtn').attr('data-next-page', nextPageUrl);
+        },
+        error: function (xhr, status, error) {
+            console.error('Error loading more posts:', error);
+        }
+    });
+}
+
+
+                    </script>
+                    
+      
+      </div>
+      <div class="row pt-2 pb-2">
+      <div class="col-lg-8"></div>
+        <div class="col-lg-4"><input type="text" class="form-control" data-id="image" name="mediaSearch" placeholder="Enter Search Keyword" id="mediaSearch" value="" /></div>
+      </div>
+      <div class="row" id="imageList">
+      @foreach($data['selectedMedia'] as $item)
+              @php
+                $extension = pathinfo($item->photos, PATHINFO_EXTENSION);
+                $filePathWithoutExtension = pathinfo($item->fullpath, PATHINFO_DIRNAME) . '/' . pathinfo($item->fullpath, PATHINFO_FILENAME);
+                $filePathWithoutExtension = $filePathWithoutExtension.'_video.gif';
+                $editURL = dirname(request()->path());
+                $imgselected = [];
+                if($editURL=='news/edit') {
+                  $imgselected = explode(',', $data['news']->featureImage);
+                }
+                $selectimgCls = '';
+              @endphp
+              @if (in_array($item->fullpath, $imgselected))
+                @php
+                  $selectimgCls = 'green-border';
+                @endphp
+              @endif
+                  <div  class="col-lg-2 mediacls">
+                    @if($extension=='pdf')
+                    <img style="cursor:pointer" id="photo_{{$item->id}}" onclick="ImageSelect('{{$item->fullpath}}','{{asset('public/media').'/pdficon.jpg'}}','photo_{{$item->id}}')" src="{{asset('public/media').'/pdficon.jpg'}}" class="img-fluid rounded {{ $selectimgCls }}" />
+                    @elseif($extension=='webp')
+                    <img style="cursor:pointer" id="photo_{{$item->id}}" onclick="ImageSelect('{{$item->fullpath}}','','photo_{{$item->id}}')" src="{{ str_replace('.webp', '_small.webp', $item->fullpath) }}" class="img-fluid rounded {{ $selectimgCls }}" />
+                    @else
+                    <img style="cursor:pointer" id="photo_{{$item->id}}" onclick="ImageSelect('{{$item->fullpath}}','{{$filePathWithoutExtension}}','photo_{{$item->id}}')" src="{{$filePathWithoutExtension}}" class="img-fluid rounded {{ $selectimgCls }}" />
+                    @endif
+                  </div>
+                
+                @endforeach
+{{-- 
+              @foreach($data['media'] as $item)
+              @php
+                $extension = pathinfo($item->photos, PATHINFO_EXTENSION);
+                $filePathWithoutExtension = pathinfo($item->fullpath, PATHINFO_DIRNAME) . '/' . pathinfo($item->fullpath, PATHINFO_FILENAME);
+                $filePathWithoutExtension = $filePathWithoutExtension.'_video.gif';
+                $editURL = dirname(request()->path());
+                $imgselected = [];
+                if($editURL=='news/edit') {
+                  $imgselected = explode(',', $data['news']->featureImage);
+                }
+                $selectimgCls = '';
+              @endphp
+              @if (in_array($item->fullpath, $imgselected))
+                @php
+                  $selectimgCls = 'green-border';
+                @endphp
+              @endif
+                  <div  class="col-lg-2 mediacls">
+                    @if($extension=='pdf')
+                    <img style="cursor:pointer" id="photo_{{$item->id}}" onclick="ImageSelect('{{$item->fullpath}}','{{asset('public/media').'/pdficon.jpg'}}','photo_{{$item->id}}')" src="{{asset('public/media').'/pdficon.jpg'}}" class="img-fluid rounded {{ $selectimgCls }}" />
+                    @elseif($extension=='webp')
+                    <img style="cursor:pointer" id="photo_{{$item->id}}" onclick="ImageSelect('{{$item->fullpath}}','','photo_{{$item->id}}')" src="{{ str_replace('.webp', '_small.webp', $item->fullpath) }}" class="img-fluid rounded {{ $selectimgCls }}" />
+                    @else
+                    <img style="cursor:pointer" id="photo_{{$item->id}}" onclick="ImageSelect('{{$item->fullpath}}','{{$filePathWithoutExtension}}','photo_{{$item->id}}')" src="{{$filePathWithoutExtension}}" class="img-fluid rounded {{ $selectimgCls }}" />
+                    @endif
+                  </div>
+                
+                @endforeach
+				--}}
+                
+            </div>
+            <div class="row" id="mediaContainer"></div>
+            <div class="row">
+                <div class="col-lg-12">
+                <button id="newsloadMoreBtn" style="display:none;" class="loadmorecls" data-next-page="{{ $data['media']->nextPageUrl() }}">Load More</button>
+              </div>
+            </div>
+      
+              </div>
+    </div>
+  </div>
+</div>

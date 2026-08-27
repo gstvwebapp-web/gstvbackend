@@ -1,0 +1,757 @@
+/**
+* Template Name: NiceAdmin - v2.2.2
+* Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
+* Author: BootstrapMade.com
+* License: https://bootstrapmade.com/license/
+*/
+(function() {
+  "use strict";
+  
+  /**
+   * Easy selector helper function
+   */
+  const select = (el, all = false) => {
+    el = el.trim()
+    if (all) {
+      return [...document.querySelectorAll(el)]
+    } else {
+      return document.querySelector(el)
+    }
+  }
+
+  /**
+   * Easy event listener function
+   */
+  const on = (type, el, listener, all = false) => {
+    if (all) {
+      select(el, all).forEach(e => e.addEventListener(type, listener))
+    } else {
+      select(el, all).addEventListener(type, listener)
+    }
+  }
+
+  /**
+   * Easy on scroll event listener 
+   */
+  const onscroll = (el, listener) => {
+    el.addEventListener('scroll', listener)
+  }
+
+  /**
+   * Sidebar toggle
+   */
+  if (select('.toggle-sidebar-btn')) {
+    on('click', '.toggle-sidebar-btn', function(e) {
+      select('body').classList.toggle('toggle-sidebar')
+    })
+  }
+
+  /**
+   * Search bar toggle
+   */
+  if (select('.search-bar-toggle')) {
+    on('click', '.search-bar-toggle', function(e) {
+      select('.search-bar').classList.toggle('search-bar-show')
+    })
+  }
+
+  /**
+   * Navbar links active state on scroll
+   */
+  let navbarlinks = select('#navbar .scrollto', true)
+  const navbarlinksActive = () => {
+    let position = window.scrollY + 200
+    navbarlinks.forEach(navbarlink => {
+      if (!navbarlink.hash) return
+      let section = select(navbarlink.hash)
+      if (!section) return
+      if (position >= section.offsetTop && position <= (section.offsetTop + section.offsetHeight)) {
+        navbarlink.classList.add('active')
+      } else {
+        navbarlink.classList.remove('active')
+      }
+    })
+  }
+  window.addEventListener('load', navbarlinksActive)
+  onscroll(document, navbarlinksActive)
+
+  /**
+   * Toggle .header-scrolled class to #header when page is scrolled
+   */
+  let selectHeader = select('#header')
+  if (selectHeader) {
+    const headerScrolled = () => {
+      if (window.scrollY > 100) {
+        selectHeader.classList.add('header-scrolled')
+      } else {
+        selectHeader.classList.remove('header-scrolled')
+      }
+    }
+    window.addEventListener('load', headerScrolled)
+    onscroll(document, headerScrolled)
+  }
+  
+  /**
+   * Back to top button
+   */
+  let backtotop = select('.back-to-top')
+  if (backtotop) {
+    const toggleBacktotop = () => {
+      if (window.scrollY > 100) {
+        backtotop.classList.add('active')
+      } else {
+        backtotop.classList.remove('active')
+      }
+    }
+    window.addEventListener('load', toggleBacktotop)
+    onscroll(document, toggleBacktotop)
+  }
+
+  /**
+   * Initiate tooltips
+   */
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
+
+  /**
+   * Initiate quill editors
+   */
+  if (select('.quill-editor-default')) {
+    new Quill('.quill-editor-default', {
+      theme: 'snow'
+    });
+  }
+
+  if (select('.quill-editor-bubble')) {
+    new Quill('.quill-editor-bubble', {
+      theme: 'bubble'
+    });
+  }
+
+  if (select('.quill-editor-full')) {
+    new Quill(".quill-editor-full", {
+      modules: {
+        toolbar: [
+          [{
+            font: []
+          }, {
+            size: []
+          }],
+          ["bold", "italic", "underline", "strike"],
+          [{
+              color: []
+            },
+            {
+              background: []
+            }
+          ],
+          [{
+              script: "super"
+            },
+            {
+              script: "sub"
+            }
+          ],
+          [{
+              list: "ordered"
+            },
+            {
+              list: "bullet"
+            },
+            {
+              indent: "-1"
+            },
+            {
+              indent: "+1"
+            }
+          ],
+          ["direction", {
+            align: []
+          }],
+          ["link", "image", "video"],
+          ["clean"]
+        ]
+      },
+      theme: "snow"
+    });
+  }
+
+  /**
+   * Initiate TinyMCE Editor
+   */
+
+  var useDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  tinymce.init({
+    selector: 'textarea.tinymce-editor',
+    plugins: 'print preview paste importcss searchreplace autolink autosave save directionality code visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help charmap quickbars emoticons',
+    imagetools_cors_hosts: ['picsum.photos'],
+    menubar: 'file edit view insert format tools table help',
+    menubar: false,
+    toolbar: 'code | undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen  preview save print | insertfile image media template link anchor codesample | ltr rtl',
+    toolbar_sticky: true,
+    autosave_ask_before_unload: true,
+    autosave_interval: '30s',
+    autosave_prefix: '{path}{query}-{id}-',
+    autosave_restore_when_empty: false,
+    autosave_retention: '2m',
+    image_advtab: true,
+    link_list: [],
+    image_list: [],
+    image_class_list: [],
+    importcss_append: true,
+    file_picker_callback: function(callback, value, meta) {
+     
+    },
+    templates: [],
+    template_cdate_format: '[Date Created (CDATE): %m/%d/%Y : %H:%M:%S]',
+    template_mdate_format: '[Date Modified (MDATE): %m/%d/%Y : %H:%M:%S]',
+    height: 600,
+    image_caption: true,
+    quickbars_selection_toolbar: 'bold italic | quicklink h1 h2 h3 h4 h5 h6 blockquote quickimage quicktable',
+    noneditable_noneditable_class: 'mceNonEditable',
+    toolbar_mode: 'sliding',
+    contextmenu: 'link image imagetools table',
+    skin: useDarkMode ? 'oxide-dark' : 'oxide',
+    content_css: useDarkMode ? 'dark' : 'default',
+    setup: function(editor) {
+      editor.on('change', function() {
+          tinymce.triggerSave();
+      });
+      editor.on('BeforeSetContent', function(event) {
+        event.content = event.content.replace(/<a.*?>(.*?)<\/a>/gi, '$1');
+      });
+      /*editor.on('init', function() {
+        editor.parser.removeRule('auto_link');
+      });*/
+      editor.ui.registry.addButton('twitter', {
+          text: 'Social Media',
+          icon: 'embed-page',
+          context: 'twitter',
+          onAction: function(_) {
+              $('#twitterModal').modal('show');
+          }
+      });
+  },
+    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px } img { max-width: 100%; height: auto; }'
+  });
+
+ $('#addtwittercontent').click(function() {
+    var twitterpostId = $('#twitterpost').val();
+    var facebookpostId = $('#facebookpost').val();
+    var instagrampostId = $('#instagrampost').val();
+    var youtubepostId = $('#youtubepost').val();
+
+    var twitterhtml = (twitterpostId != '') ? '<p><blockquote class="twitter-tweet"><a href="https://twitter.com/username/status/' + twitterpostId + '">' + twitterpostId + '</a></blockquote></p>' : '';
+    var facebookhtml = (facebookpostId != '') ? '<p><iframe src="https://www.facebook.com/plugins/post.php?href=' + facebookpostId + '" style="width:100%; height:500px; border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true" allow="encrypted-media"></iframe></p>' : '';
+    var instagramhtml = (instagrampostId != '') ? '<p><blockquote class="instagram-media" data-instgrm-permalink="' + instagrampostId + '" data-instgrm-version="14"> Instagram Post : '+instagrampostId+'</blockquote></p>' : '';
+    var youtubehtml = (youtubepostId != '') ? '<p><iframe src="https://www.youtube.com/embed/' + youtubepostId + '" style="width:100%; height:400px; border:none;overflow:hidden" frameborder="0" allowfullscreen></iframe></p>' : '';
+
+    var combinedHtml = twitterhtml + facebookhtml + instagramhtml + youtubehtml;
+
+    var editorId = 'descriptioneditor'; // replace with the correct ID of your TinyMCE editor
+
+    // Check if the TinyMCE editor instance exists
+    var editor = tinymce.get(editorId);
+
+    if (editor) {
+        // Execute mceInsertContent with the combined HTML
+        editor.execCommand('mceInsertContent', false, combinedHtml);
+    }
+
+    // Clear input values and hide modal
+    $('#twitterpost').val('');
+    $('#facebookpost').val('');
+    $('#instagrampost').val('');
+    $('#youtubepost').val('');
+    $('.modal').modal('hide');
+});
+
+
+
+  
+  /**
+   * Initiate Bootstrap validation check
+   */
+  var needsValidation = document.querySelectorAll('.needs-validation')
+
+  Array.prototype.slice.call(needsValidation)
+    .forEach(function(form) {
+      form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+
+        form.classList.add('was-validated')
+      }, false)
+    })
+
+    
+  /**
+   * Initiate Datatables
+   */
+  const datatables = select('.datatable', true)
+
+  
+  
+  
+  
+  /*datatables.forEach(datatable => {
+    new simpleDatatables.DataTable(datatable);
+  })*/
+  /*document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('featureImage').addEventListener('change', function(event) {
+      const fileInput = event.target;
+      const files = fileInput.files;
+
+      if (files.length > 0) {
+          const reader = new FileReader();
+
+          reader.onload = function(e) {
+              const imagePreview = document.getElementById('imagePreview');
+              imagePreview.innerHTML = ''; // Clear previous previews
+
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.style.width = '100%'; // Adjust the width as needed
+
+              imagePreview.appendChild(img);
+              $('#updateimgid').hide();
+          };
+
+          reader.readAsDataURL(files[0]);
+      }
+  })
+})*/
+
+  datatables.forEach(datatable => {
+    const myTable = new simpleDatatables.DataTable(datatable, {
+      perPage: 20, // Number of items per page
+      perPageSelect: [5, 10, 20, 50, 100], // Options for items per page dropdown
+      nextText: 'Next', // Text for the "Next" button
+      prevText: 'Previous', // Text for the "Previous" button
+      firstText: 'First', // Text for the "First" button
+      lastText: 'Last', // Text for the "Last" button
+      headings: true, // Display column headings
+      columns: [
+        { select: 0, width: '100px' }, 
+        { select: 1, width: '100px' }, 
+        { select: 2, width: '100px' }, 
+        { select: 3, width: '100px' }, 
+      ],
+    });
+    
+    const tableBody = document.querySelector('.datatable tbody');
+    const tableBodyID = document.querySelector('.datatable');
+    let oldOrder = Array.from(tableBody.children).map(row => row.dataset.id);
+    let topnewsOrder = Array.from(tableBody.children).map(row => row.dataset.top);
+    
+    new Sortable(tableBody, {
+      animation: 150,
+      onUpdate: function (evt) {
+        const tableId = tableBodyID.getAttribute('id');
+        var activePageValue = $('.dataTable-pagination-list .active').text();
+        if(tableId=='categorytabledata' || tableId=='newstabledata') {
+          const newOrder = Array.from(tableBody.children).map(row => row.dataset.id);
+          updateOrderInDatabase(newOrder, tableId, oldOrder, topnewsOrder, activePageValue);
+        }
+      },
+    });
+
+    function updateOrderInDatabase(newOrder, tableId, oldOrder, tabletop, activePageValue) {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+      var urls = '';
+      if(tableId=='categorytabledata')
+      {
+        urls = '//'+window.location.hostname+'/backend/category/catorder';
+      } else if(tableId=='newstabledata')
+      {
+        urls = '//'+window.location.hostname+'/backend/news/newsorder';
+      }
+      // Make an Ajax request to your Laravel backend
+      $.ajax({
+        type: 'POST',
+        url: urls, // Replace with your Laravel route
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        data: {
+          newOrder: newOrder,
+          oldOrder: oldOrder,
+          tabletop: tabletop,
+          pageNum: activePageValue,
+        },
+        success: function (response) {
+          console.log(response);
+        },
+        error: function (error) {
+          console.error(error);
+        },
+      });
+    }
+  })
+  $('#catID').select2({
+    placeholder: 'Search for categories...',
+  })
+  $('#subcatID').select2({
+    placeholder: 'Search for Sub categories...',
+  })
+  $('.catidcls').change(function() {
+    var catid = $(this).val();
+    if ($('#cat'+catid).prop('checked')) {
+      $('#subcat_'+catid).show();
+      console.log('Checkbox is now checked');
+    } else {
+      $('#subcat_'+catid).hide();
+      console.log('Checkbox is now unchecked');
+    }
+  })
+
+ 
+
+  $('#newstatus').change(function () {
+    var statusval = $(this).val();
+    $('#scheduledatetxt').hide();
+    $('#scheduleDate').prop('required', false);
+    if(statusval=='Schedule')
+    {
+      $('#scheduledatetxt').show();
+      $('#scheduleDate').prop('required', true);
+    }
+  })
+  
+  $('.homenewscls').click(function() {
+      var ishome = $(this).is(':checked');
+      var idsValue = $(this).data('ids');
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        $.ajax({
+            url: '//'+window.location.hostname+'/backend/news/tophome',
+            method: 'POST', // or 'GET' or any other HTTP method
+            headers: {
+              'X-CSRF-TOKEN': csrfToken,
+            },
+            data: {
+              newID: idsValue,
+              is_home: ishome,
+            },
+            success: function(response) {
+                // Handle the AJAX response
+                console.log(response);
+            },
+            error: function(xhr, status, error) {
+                // Handle errors
+                console.error(xhr.responseText);
+            }
+        });   
+  })
+
+  
+  
+  $('#catID').on('select2:select', function (e) {
+    var selectedOption = e.params.data.id;
+    callAjaxFunction(selectedOption);
+  })
+
+  $('.tags-select').select2({
+    placeholder: 'Select tags',
+    
+    ajax: {
+        url: '//'+window.location.hostname+'/backend/news/tagSuggestions',
+        dataType: 'json',
+        delay: 250,
+        processResults: function(data) {
+            return {
+                results: data
+            };
+        },
+        cache: true
+    },
+    minimumInputLength: 3, // Require at least one character for search
+    tags: false, // Disable tagging
+    createTag: function (params) {
+        return null; // Disable the ability to create new tags
+    }
+})
+  /*$('.tags-select').on('keyup', function() {
+    clearTimeout(timeout);
+    timeout = setTimeout(function() {
+        $('.tags-select').trigger('change');
+    }, 500); 
+  })*/
+  /**
+   * Autoresize echart charts
+   */
+  const mainContainer = select('#main');
+  if (mainContainer) {
+    setTimeout(() => {
+      new ResizeObserver(function() {
+        select('.echart', true).forEach(getEchart => {
+          echarts.getInstanceByDom(getEchart).resize();
+        })
+      }).observe(mainContainer);
+    }, 200);
+  }
+
+  function getCurrentDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  window.onload = function() {
+    var scheduleDateInput = document.getElementById('scheduleDate');
+    if (scheduleDateInput) {
+        scheduleDateInput.setAttribute('min', getCurrentDate());
+    }
+  },
+  $('.removeImg').click(function(){
+    var imageId = $(this).data('id');
+    $.ajax({
+        url: '//'+window.location.hostname+'/backend/mediagallery/delete-image/'+imageId,
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function (response) {
+            // Handle success
+            console.log(response);
+            location.reload();
+        },
+        error: function (xhr, status, error) {
+            // Handle error
+            console.error(xhr.responseText);
+        }
+    });
+  }),
+
+
+  $('#loadMoreBtn').click(function() {
+    loadMorePosts();
+  })
+
+  $('#newsloadMoreBtn').click(function() {
+    loadMorePostNews('');
+  })
+  
+  $('#videonewsloadMoreBtn').click(function() {
+    videoloadMorePostNews('');
+  })
+  
+  function loadMorePosts() {
+      var nextPageUrl = document.getElementById('loadMoreBtn').getAttribute('data-next-page');
+      $.ajax({
+          url: nextPageUrl,
+          type: 'GET',
+          dataType: 'html',
+          success: function (response) {
+              // Append the new posts to the container
+              var responsedata = JSON.parse(response);
+              var html = '';
+              $.each(responsedata.data, function(index, item) {
+                var photoTitle = '';
+                if(item.photoTitle !== null) { photoTitle = item.photoTitle; }
+                var photoAlt = '';
+                if(item.photoAlt !== null) { photoAlt = item.photoAlt; }
+                var extension = item.photos.split('.').pop();
+                var pdfval = '';
+                var imgpath = item.fullpath;
+                if(extension=='pdf')
+                {
+                  pdfval = '//'+window.location.hostname+'/backend/public/media/pdficon.jpg';
+                  imgpath = pdfval;
+                } else if(extension=='webp')
+                {
+                  pdfval = imgpath.replace('.webp', '_small.webp');
+                  imgpath = imgpath.replace('.webp', '_small.webp');
+                } else {
+                  var dotIndex  = imgpath.lastIndexOf('.');
+                  var filePathWithoutExtension;
+                  if (dotIndex !== -1 && dotIndex > 0) {
+                    filePathWithoutExtension = imgpath.slice(0, dotIndex);
+                  } 
+                  pdfval = filePathWithoutExtension+'_video.gif';
+                  imgpath = pdfval;
+                }
+                html +='<div class="col-lg-2 mediacls"><img style="cursor:pointer" src="'+pdfval+'" onclick="toggleDrawer('+item.id+')" class="img-fluid rounded border" /></div>'
+                html +='<div class="drawer" id="drawer_'+item.id+'">'
+                html +='<div class="close-button" onclick="CloseDrawer('+item.id+')">✖</div>'
+                html +='<form action="{{ url("/mediagallery/media-update/") }}" method="post" enctype="multipart/form-data">'
+                html +='<input type="hidden" name="_token" value="{{ csrf_token() }}" />'
+                html +='<div class="drawer-content"><h4>Image Detail</h4>'
+                html +='<p><img style="cursor:pointer; max-height: 150px;" src="'+pdfval+'" class="img-fluid rounded border" /></p>'
+                //html +='<p><a style="cursor:pointer; color:#840d00" class="removeImg" data-id="'+item.id+'">Delete Image</a></p>'
+                html +='<p>Image Title<br/><input type="text" name="photoTitle" class="form-control" value="'+photoTitle+'" /></p>'
+                html +='<p>Image Atl<br/><input type="text" name="photoAlt" class="form-control" value="'+photoAlt+'" /><input type="hidden" name="photoid" class="form-control" value="'+item.id+'" /></p>'
+                html +='<p>Image Path<br/><input type="text" name="fullpath" class="form-control" value="'+item.fullpath+'" /></p><p><button class="btn btn-primary" type="submit">Update</button></p>'
+                html +='</div>'
+                html +='</form>'
+                html +='</div>'
+              });
+              $('#mediaContainer').append(html);
+              var nextPageUrl = responsedata.next_page_url;
+              $('#loadMoreBtn').show();
+              if(nextPageUrl==null)
+              {
+                $('#loadMoreBtn').hide();
+              }
+              $('#loadMoreBtn').attr('data-next-page', nextPageUrl);
+          },
+          error: function (xhr, status, error) {
+              console.error('Error loading more posts:', error);
+          }
+      });
+  }
+  
+  
+  /*const autoSaveInterval = 30000; // 1 minute
+  const form = $('#newsform');
+
+  function saveDraft() {
+      $.ajax({
+          type: 'POST',
+          url: '../news/autosaveDraft',
+          data: form.serialize(),
+          success: function(response) {
+            console.log(response.id);
+            $('#autosaveid').val(response);
+            console.log('Draft saved successfully.'+response);
+          },
+          error: function(error) {
+              console.error('Failed to save draft:', error);
+          }
+      });
+  }
+  setInterval(saveDraft, autoSaveInterval);*/
+
+})();
+var selectedImages = [];
+var selectedImagespath = [];
+function ImageSelect(paths,extensions,imgid) {
+ $('#imagevideoModalCenter').modal('hide');
+ // const selectedImageContainer = document.getElementById("selectedImageContainer");
+  var selectedImageContainer = $('#selectedImageContainer');
+  var pathurl, imageList;
+  
+  imgborderSelect(imgid);
+  if(extensions!='')
+  { 
+    pathurl = extensions.replace('.webp', '_small.webp');;
+    imageList = paths;
+  } else {
+    imageList = paths;
+    pathurl = paths.replace('.webp', '_small.webp');;
+  }
+  /*var index = selectedImages.indexOf(imageList);
+  var indeximgpath = selectedImagespath.indexOf(pathurl);
+  if (index === -1) {
+      selectedImages.push(imageList);
+      selectedImagespath.push(pathurl);
+  } else {
+      selectedImages.splice(index, 1);
+      selectedImagespath.splice(indeximgpath, 1);
+  }
+ 
+  var imgElement = '';
+  
+  if (selectedImagespath.length === 1) {
+     imgElement += '<img src="'+pathurl+'" class="oneselectimggallery" />';
+  } else if (selectedImagespath.length > 1) {
+    selectedImagespath.forEach(function(pathurl) {
+      imgElement += '<img src="'+pathurl+'" class="selectimggallery" />';
+    });
+  }
+
+  selectedImageContainer.html(imgElement);
+  document.getElementById("featureImage").value = selectedImages;*/
+  
+  selectedImageContainer.html('<img src="'+pathurl+'" class="oneselectimggallery" />');
+  document.getElementById("featureImage").value = imageList;
+}
+function imgborderSelect(imgid)
+{
+  $('.mediacls img').removeClass("green-border");
+  $("#" + imgid).addClass("green-border");
+}
+
+function videoSelect(paths,extensions,imgid) {
+ $('#videoModalCenters').modal('hide');
+  var selectedImageContainer = $('#selectedVideoContainers');
+  var pathurl, imageList; 
+  videoborderSelect(imgid);
+  if(extensions!='')
+  { 
+    pathurl = extensions;
+    imageList = paths;
+  } else {
+    imageList = paths;
+    pathurl = paths;
+  }
+ 
+  selectedImageContainer.html('<img src="'+pathurl+'" class="oneselectimggallery" />');
+  document.getElementById("featureVideo").value = imageList;
+
+}
+function videoborderSelect(imgid)
+{
+  $('.mediacls img').removeClass("green-border");
+  $("#" + imgid).addClass("green-border");
+}
+
+function toggleDrawer(id) {
+  document.querySelectorAll('.drawer').forEach(function (drawer) {
+      drawer.style.right = '-300px';
+  });
+  var drawer = document.getElementById('drawer_'+id);
+  if(drawer.style.right === '0px')
+  {
+    drawer.style.right = '-300px';
+  } else {
+    drawer.style.right = '0px';
+  }
+}
+function CloseDrawer(id)
+{
+var drawer = document.getElementById('drawer_'+id);
+  if(drawer.style.right === '0px')
+  {
+    drawer.style.right = '-300px';
+  } else {
+    drawer.style.right = '0px';
+  }
+}
+
+function callAjaxFunction(selectedOption) {
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+  var domainName = window.location.hostname;
+  
+  $.ajax({
+      url: '//'+domainName+'/backend/news/subCategory',
+      type: 'POST', // or 'GET'
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      data: { option: selectedOption },
+      success: function (response) {
+        //var responsedata = JSON.parse(response);
+        if(response!='') {
+          var html = '<option value="">Select SubCategory</option>';
+          $.each(response, function(index, item) {
+            html +='<option value="'+item.id+'">'+item.title+'</option>'
+          });
+          
+          //$('#subcategories').show();
+        } else {
+           html += '<option value="">Select SubCategory</option>';
+          //$('#subcategories').hide();
+        }
+        $('#subcatID').html(html);
+      },
+      error: function (error) {
+          // Handle AJAX error
+          console.error(error);
+      }
+  });
+}

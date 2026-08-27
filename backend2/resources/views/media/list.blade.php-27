@@ -1,0 +1,174 @@
+@extends('layouts.app')
+
+@section('content')
+<main id="main" class="main">
+<style>
+        .drawer {
+            width: 300px;
+            height: 100%;
+            background-color: #f1f1f1;
+            position: fixed;
+            top: 0;
+            right: -300px;
+            z-index: 999;
+            transition: right 0.3s ease-in-out;
+        }
+
+        .drawer-content {
+            padding: 20px 0 50px;
+        }
+
+        .close-button {
+            position: absolute;
+            top: -4px;
+            left: 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+    <div class="pagetitle">
+      <h1>Media Gallery</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
+          <li class="breadcrumb-item active">Media Gallery</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+      @if(session('error'))
+        <div class="col-lg-12">
+          <div class="alert alert-danger">
+              {{ session('error') }}
+          </div>
+        </div>
+      @endif
+      @if(session('status'))
+        <div class="col-lg-12">
+          <div class="alert alert-success">
+              {{ session('status') }}
+          </div>
+        </div>
+      @endif
+       
+      <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+            <div class="row">
+                  <div class="col-lg-12 pt-4">
+                    
+<link href="{{ URL::asset('public/assets/css/dropzone.min.css') }}" rel="stylesheet">
+<script src="{{ URL::asset('public/assets/js/dropzone.min.js') }}"></script>
+
+<form action="{{ url('/mediagallery/media-items') }}" method="post" enctype="multipart/form-data" class="dropzone" id="my-dropzone">
+    @csrf
+
+</form>
+</div>
+<script>
+    Dropzone.options.myDropzone = {
+        paramName: "images", // The name that will be used to transfer the file
+        maxFilesize: 200, // MB
+        acceptedFiles: "image/*,video/*,application/pdf",
+        dictDefaultMessage: "Drop images here or click to upload",
+        addRemoveLinks: true,
+        init: function () {
+            this.on("success", function (file, response) {
+                // Handle success
+                file.previewElement.setAttribute("data-image-id", response.imageId);
+                console.log(response);
+            });
+
+            this.on("removedfile", function (file) {
+               var imageId = file.previewElement.getAttribute("data-image-id");
+                $.ajax({
+                    url: "{{ url('/mediagallery/delete-image/') }}/"+imageId,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function (response) {
+                        // Handle success
+                        console.log(response);
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
+        }
+    };
+    
+</script>
+
+            </div>
+              
+            <div class="row mt-3">
+              @foreach($data['media'] as $item)
+                  @php
+                    $extension = pathinfo($item->photos, PATHINFO_EXTENSION);
+                    $filePathWithoutExtension = pathinfo($item->fullpath, PATHINFO_DIRNAME) . '/' . pathinfo($item->fullpath, PATHINFO_FILENAME);
+                    $filePathWithoutExtension = $filePathWithoutExtension.'_video.gif';
+                  @endphp
+                  <div class="col-lg-2 mediacls">
+                    @if($extension=='pdf')
+                    <img style="cursor:pointer" src="{{asset('public/media').'/pdficon.jpg'}}" onclick="toggleDrawer({{$item->id}})" class="img-fluid rounded border" />
+                    @elseif($extension=='webp')
+                    <img style="cursor:pointer" src="{{ str_replace('.webp', '_small.webp', $item->fullpath) }}" onclick="toggleDrawer({{$item->id}})" class="img-fluid rounded border" />
+                    @else
+                    <img style="cursor:pointer" src="{{$filePathWithoutExtension}}" onclick="toggleDrawer({{$item->id}})" class="img-fluid rounded border" />
+                    @endif
+                  </div>
+                  <div class="drawer" id="drawer_{{$item->id}}">
+                  <div class="close-button" onclick="CloseDrawer({{$item->id}})">✖</div>
+                  <form action="{{ url('/mediagallery/media-update/') }}" method="post" enctype="multipart/form-data">
+                  @csrf
+                  <div class="drawer-content">
+                      <h4>Image Detail</h4>
+                      <p>
+                        @if($extension=='pdf')
+                        <img style="cursor:pointer; max-height: 150px;" src="{{asset('public/media').'/pdficon.jpg'}}" class="img-fluid rounded border" />
+                        @elseif($extension=='webp')
+                        <img style="cursor:pointer; max-height: 150px;" src="{{ str_replace('.webp', '_small.webp', $item->fullpath) }}" class="img-fluid rounded border" />
+                        @else
+                        <img style="cursor:pointer; max-height: 150px;" src="{{$filePathWithoutExtension}}" class="img-fluid rounded border" />
+                        @endif
+                      </p>
+                      <!--<p><a style="cursor:pointer; color:#840d00" class="removeImg" data-id="{{$item->id}}">Delete Image</a></p>-->
+                      <p>
+                        Image Title<br/>
+                        <input type="text" name="photoTitle" class="form-control" value="{{$item->photoTitle}}" />
+                      </p>
+                      <p>
+                        Image Atl<br/>
+                        <input type="text" name="photoAlt" class="form-control" value="{{$item->photoAlt}}" />
+                        <input type="hidden" name="photoid" class="form-control" value="{{$item->id}}" />
+                      </p>
+                      <p>
+                        Image Path<br/>
+                        <input type="text" name="fullpath" class="form-control" value="{{$item->fullpath}}" />
+                      </p>
+                      <p><button class="btn btn-primary" type="submit">Update</button></p>
+                  </div>
+                  </form>
+                </div>
+                @endforeach
+
+                
+            </div>
+            <div class="row" id="mediaContainer">
+              
+            </div>
+            <div class="row">
+              <div class="col-lg-12">
+            <button id="loadMoreBtn" class="loadmorecls" data-next-page="{{ $data['media']->nextPageUrl() }}">Load More</button>
+          </div></div></div>
+
+        </div>
+      </div>
+    </section>
+  </main><!-- End #main -->
+@endsection

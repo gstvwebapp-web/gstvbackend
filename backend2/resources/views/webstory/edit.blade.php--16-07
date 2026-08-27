@@ -1,0 +1,116 @@
+@extends('layouts.app')
+
+@section('content')
+<main id="main" class="main">
+  <div class="pagetitle">
+    <h1>Edit Web Story</h1>
+  </div>
+
+  <section class="section">
+    <div class="card">
+      <div class="card-body pt-4">
+        <form method="POST" action="{{ url('/webstory/update') }}" enctype="multipart/form-data">
+          @csrf
+          <input type="hidden" name="catid" value="{{ $data['webstory']->id }}">
+
+          <div class="mb-3">
+            <label>Title</label>
+            <input type="text" name="title" class="form-control" value="{{ $data['webstory']->title }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label>English Title</label>
+            <input type="text" name="englishTitle" class="form-control" value="{{ $data['webstory']->englishTitle }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label>Multiple Images with Titles</label>
+            <div id="imageInputs" class="row" style="margin-left:0px;margin-right:0px;">
+              @php $i = 0; @endphp
+              @foreach($data['webstory']->Story_data as $webdata)
+              @php $i++; @endphp
+              <div class="col-md-6 image-boxcls file-item" id="row{{ $i }}">
+                <div class="me-2">
+                  <label class="drag-area-img" for="fileInput{{ $i }}">
+                    <img id="preview{{ $i }}" src="{{ str_replace('.webp', '_small.webp', $webdata['webimage']) }}" alt="preview" width="80" height="80">
+                    <input type="file" id="fileInput{{ $i }}" name="files[]" accept="image/*" class="d-none" onchange="previewImage(event, {{ $i }})">
+                  </label>
+                  <input type="hidden" name="exitsfiles[]" value="{{ $webdata['webimage'] }}">
+                </div>
+                <div class="flex-grow-1">
+                  <textarea name="exitstitles[]" class="form-control" placeholder="Enter the title..." required>{{ $webdata['webtitles'] }}</textarea>
+                </div>
+                <button type="button" class="remove-btn-img" onclick="document.getElementById('row{{ $i }}').remove()"><i class="bi bi-x-circle"></i></button>
+              </div>
+              @endforeach
+              @php $count = $i; @endphp
+            </div>
+            <button type="button" class="btn btn-sm btn-success mt-2" onclick="addImageField()">+ Add More</button>
+          </div>
+
+          <div class="mb-3">
+            <label>Meta Keyword</label>
+            <input type="text" name="metakeyword" class="form-control" value="{{ $data['webstory']->metakeyword }}">
+          </div>
+
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="notification" id="notification" value="1" @if($data['webstory']->notification == 1) checked @endif>
+            <label class="form-check-label" for="notification">Send Notification</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Update</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- SortableJS -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+  let count = {{ $count ?? 0 }};
+
+  function addImageField() {
+    count++;
+    const container = document.getElementById('imageInputs');
+    const div = document.createElement('div');
+    div.className = "col-md-6 image-boxcls file-item";
+    div.id = 'row' + count;
+    const baseUrl = "{{ config('app.url') }}";
+
+    div.innerHTML = `
+      <div class="me-2">
+        <label class="drag-area-img" for="fileInput${count}">
+          <img id="preview${count}" src="${baseUrl}/public/assets/img/previewimg.png" alt="preview" width="80" height="80">
+          <input type="file" id="fileInput${count}" name="files[]" accept="image/*" class="d-none" required onchange="previewImage(event, ${count})">
+        </label>
+      </div>
+      <div class="flex-grow-1">
+        <textarea name="titles[]" class="form-control" placeholder="Enter the title..." required></textarea>
+      </div>
+      <button type="button" class="remove-btn-img" onclick="document.getElementById('row${count}').remove()"><i class="bi bi-x-circle"></i></button>
+    `;
+    container.appendChild(div);
+  }
+
+  function previewImage(event, index) {
+    const input = event.target;
+    const reader = new FileReader();
+    reader.onload = function() {
+      document.getElementById(`preview${index}`).src = reader.result;
+    };
+    if (input.files && input.files[0]) {
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Enable drag-and-drop sorting
+    new Sortable(document.getElementById('imageInputs'), {
+      animation: 150,
+      handle: '.image-boxcls',
+      ghostClass: 'sortableimg-ghost'
+    });
+  });
+</script>
+@endsection
