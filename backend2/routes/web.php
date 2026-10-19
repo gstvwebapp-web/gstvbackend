@@ -39,6 +39,9 @@ use App\Http\Controllers\backend\CricketController;
 use App\Http\Controllers\backend\NewsflashController;
 use App\Http\Controllers\backend\PodcastauthorController;
 use App\Http\Controllers\backend\PodcastController;
+use App\Http\Controllers\backend\VideoadsController;
+use App\Http\Controllers\backend\FestivalController;
+use App\Http\Controllers\backend\MxfVideoController;
 use App\Http\Controllers\backend\EventController;
 use App\Http\Controllers\backend\AdspriceController;
 use App\Http\Controllers\backend\UserscoinController;
@@ -54,14 +57,14 @@ use Illuminate\Support\Facades\Redis;
 use App\Http\Controllers\backend\NewsOrderLogController;
 use App\Http\Controllers\backend\ElectionResultModuleController;
 
+// MXF Video Test Route (No Auth Required)
+Route::get('/test-mxf', function() {
+    $exists = class_exists('App\Http\Controllers\backend\MxfVideoController');
+    return 'MXF Video Module Routes are working! Controller exists: ' . ($exists ? 'YES' : 'NO');
+});
+
 Route::get('/clear', function () {
-    $messages = [];
-    
     try {
-        // Clear Laravel caches
-        Artisan::call('config:clear');
-        $messages[] = '✓ Config cache cleared';
-        
         Artisan::call('cache:clear');
         $messages[] = '✓ Laravel cache cleared';
         
@@ -178,9 +181,9 @@ Route::get('/redisclear', function () {
 Route::get('/error/404', function () {
   return view('errors.404');
 })->name('error.404');
-Route::get('/phpinfo', function () {
-    return phpinfo();
-});
+// Route::get('/phpinfo', function () {
+//     return phpinfo();
+// });
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
@@ -543,6 +546,48 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/podcast/destroy/{id}', [PodcastController::class, 'destroy'])->name('podcast.destroy');
         Route::get('/podcast/updateStatus/{status}/{id}', [PodcastController::class, 'updateStatus'])->name('podcast.updateStatus');
         Route::get('/podcast/podcastfetchData', [PodcastController::class, 'podcastfetchData']);
+
+        // Video Ads Routes
+        Route::get('/videoads', [VideoadsController::class, 'index'])->name('videoads');
+        Route::get('/videoads/add', [VideoadsController::class, 'add'])->name('videoads.add');
+        Route::post('/videoads/store', [VideoadsController::class, 'store'])->name('videoads.store');
+        Route::get('/videoads/edit/{id}', [VideoadsController::class, 'edit'])->name('videoads.edit');
+        Route::post('/videoads/update', [VideoadsController::class, 'update'])->name('videoads.update');
+        Route::delete('/videoads/destroy/{id}', [VideoadsController::class, 'destroy'])->name('videoads.destroy');
+        Route::get('/videoads/updateStatus/{status}/{id}', [VideoadsController::class, 'updateStatus'])->name('videoads.updateStatus');
+        Route::get('/videoads/videoadsfetchData', [VideoadsController::class, 'videoadsfetchData']);
+
+        // Festival Routes
+        Route::get('/festival', [FestivalController::class, 'index'])->name('festival');
+        
+        // Festival Type Management
+        Route::get('/festival/manage-types', [FestivalController::class, 'manageTypes'])->name('festival.manageTypes');
+        Route::post('/festival/store-type', [FestivalController::class, 'storeType'])->name('festival.storeType');
+        Route::get('/festival/edit-type/{id}', [FestivalController::class, 'editType'])->name('festival.editType');
+        Route::post('/festival/update-type/{id}', [FestivalController::class, 'updateType'])->name('festival.updateType');
+        
+        // Festival-Specific CRUD (by festival type slug)
+        Route::get('/festival/{festivalSlug}', [FestivalController::class, 'festivalList'])->name('festival.list');
+        Route::get('/festival/{festivalSlug}/add', [FestivalController::class, 'festivalAdd'])->name('festival.festivalAdd');
+        Route::post('/festival/{festivalSlug}/store', [FestivalController::class, 'festivalStore'])->name('festival.festivalStore');
+        Route::get('/festival/{festivalSlug}/edit/{id}', [FestivalController::class, 'festivalEdit'])->name('festival.festivalEdit');
+        Route::post('/festival/{festivalSlug}/update', [FestivalController::class, 'festivalUpdate'])->name('festival.festivalUpdate');
+        Route::delete('/festival/{festivalSlug}/destroy/{id}', [FestivalController::class, 'festivalDestroy'])->name('festival.festivalDestroy');
+        Route::get('/festival/{festivalSlug}/updateStatus/{status}/{id}', [FestivalController::class, 'festivalUpdateStatus'])->name('festival.festivalUpdateStatus');
+        Route::get('/festival/{festivalSlug}/fetchData', [FestivalController::class, 'festivalFetchData'])->name('festival.festivalFetchData');
+
+        // MXF Video Routes
+        Route::get('/mxf-videos', [MxfVideoController::class, 'index'])->name('mxf-videos');
+        Route::get('/mxf-videos/add', [MxfVideoController::class, 'add'])->name('mxf-videos.add');
+        Route::post('/mxf-videos/store', [MxfVideoController::class, 'store'])->name('mxf-videos.store');
+        Route::get('/mxf-videos/edit/{id}', [MxfVideoController::class, 'edit'])->name('mxf-videos.edit');
+        Route::post('/mxf-videos/update', [MxfVideoController::class, 'update'])->name('mxf-videos.update');
+        Route::delete('/mxf-videos/destroy/{id}', [MxfVideoController::class, 'destroy'])->name('mxf-videos.destroy');
+        Route::get('/mxf-videos/updateStatus/{status}/{id}', [MxfVideoController::class, 'updateStatus'])->name('mxf-videos.updateStatus');
+        Route::get('/mxf-videos/mxfvideosfetchData', [MxfVideoController::class, 'mxfvideosfetchData']);
+        Route::get('/mxf-videos/reprocess/{id}', [MxfVideoController::class, 'reprocess'])->name('mxf-videos.reprocess');
+        Route::get('/mxf-videos/status/{id}', [MxfVideoController::class, 'status'])->name('mxf-videos.status');
+        Route::post('/mxf-videos/share', [MxfVideoController::class, 'share'])->name('mxf-videos.share');
 
         Route::get('/events', [EventController::class, 'index']);
         Route::get('/events/eventfetchData', [EventController::class, 'eventfetchData']);
